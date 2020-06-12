@@ -52,7 +52,7 @@ public:
 	friend bool operator != (const matrix<_U>&, const matrix<_V>&);
 	
 	template <class _U>
-    friend ostream& operator << (ostream &, const matrix<_U>&);
+	friend ostream& operator << (ostream &, const matrix<_U>&);
 
 	matrix<_T>& submtr(const matrix<int>&, const matrix<int>&);
 
