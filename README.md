@@ -41,7 +41,6 @@ M[i][j]=...;     // set via subscrpits (i,j).
 M[I];           // I is an index matrix.
 M.get(I);
 M.get(R,L);     // R is index matrix of row and L is of column.
-                // Numbers of elements of R and L should coincide.
 ```
 - Example
 	```cpp
