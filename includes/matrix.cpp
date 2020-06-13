@@ -103,9 +103,14 @@ ostream& operator << (ostream &os, const matrix<_T>& m) {
 template <class _T>
 matrix<_T> matrix<_T>::T(bool _conj) const {
 	matrix<_T> m(size[1], size[0]);
-	for (int i = 0; i < size[1]; ++i)
-		for (int j = 0; j < size[0]; ++j)
-			m[i][j] = _conj?conj(mtr[j][i]):mtr[j][i];
+	if(_conj)
+		for (int i = 0; i < size[1]; ++i)
+			for (int j = 0; j < size[0]; ++j)
+				m[i][j] = conj(mtr[j][i]);
+	else
+		for (int i = 0; i < size[1]; ++i)
+			for (int j = 0; j < size[0]; ++j)
+				m[i][j] = mtr[j][i];
 	return m;
 }
 
@@ -120,8 +125,13 @@ matrix<int>& ind2sub(int ind, const matrix<_T>& size) {
 }
 
 template <class _T>
+int numel(const matrix<_T>& M) {
+	return M.size[0] * M.size[1];
+}
+
+template <class _T>
 matrix<int>& ind2sub(const matrix<int>& ind, const matrix<_T>& size) {
-    int n(ind.numel());
+    int n(numel(ind));
     
 	matrix<int>* res(new matrix<int> (2, n));
 	for(int i=0;i<n;i++){
@@ -133,12 +143,12 @@ matrix<int>& ind2sub(const matrix<int>& ind, const matrix<_T>& size) {
 }
 
 template <class _T>
-matrix<int> size(const matrix<_T> M){
+matrix<int> size(const matrix<_T>& M){
     return matrix<int>(2,1,{M.size[0],M.size[1]});
 }
 
 template <class _T>
-matrix<_T>& matrix<_T>::operator[] (const matrix<int>& ind) {
+matrix<_T>& matrix<_T>::operator[] (const matrix<int>& ind) const{
     matrix<_T>* M=new matrix<_T>(ind.size[0],ind.size[1]);
     for(int i=0;i<ind.size[0];i++)
         for(int j=0;j<ind.size[1];j++)
@@ -147,19 +157,19 @@ matrix<_T>& matrix<_T>::operator[] (const matrix<int>& ind) {
 }
 
 template <class _T>
-matrix<_T>& matrix<_T>::submtr (const matrix<int>& row, const matrix<int>& col) {
-    if(row.numel()!=col.numel())
-        throw "[Error] Operator [] : Two indicator matrices must have same length.";
-    matrix<_T>* M=new matrix<_T>(row.numel(),row.numel());
-    for(int i=0;i<row.numel();i++)
-        for(int j=0;j<row.numel();j++)
-            (*M)[i][j]=this->get(row.get(i),col.get(j));
-	return *M;
+matrix<_T>& matrix<_T>::get (const matrix<int>& ind) const {
+	return this->operator[](ind);
 }
 
 template <class _T>
-int matrix<_T>::numel() const {
-	return size[0] * size[1];
+matrix<_T>& matrix<_T>::get (const matrix<int>& row, const matrix<int>& col) const{
+    if(numel(row)!=numel(col))
+        throw "[Error] Operator [] : Two indicator matrices must have same length.";
+    matrix<_T>* M=new matrix<_T>(numel(row),numel(row));
+    for(int i=0;i<numel(row);i++)
+        for(int j=0;j<numel(row);j++)
+            (*M)[i][j]=this->get(row.get(i),col.get(j));
+	return *M;
 }
 
 template<class _U, class _V> bool operator == (const matrix<_U>& M1, const matrix<_V>& M2){
@@ -178,25 +188,27 @@ template<class _U, class _V> bool operator != (const matrix<_U>& M1, const matri
 
 template <class _T>
 template <class _U>
-void matrix<_T>::set(const matrix<int>& ind, const matrix<_U>& val) {
-	if (ind.numel() && val.numel()) 
-		for (int i = 0; i < ind.numel(); ++i)
+matrix<_T>& matrix<_T>::set(const matrix<int>& ind, const matrix<_U>& val) {
+	if (numel(ind) && numel(val)) 
+		for (int i = 0; i < numel(ind); ++i)
 			for (int j = 0; j < val.numel(); ++j)
 				mtr[i-i/val.size[0]*val.size[0]][i/val.size[0]] = _T(val.get(j));
 	else
 		throw("[Error] set : Sizes do not match.");
+	
+	return *this;
 }
 
 template <class _T>
-matrix<_T>& matrix<_T>::reshape(const matrix<int>& size) const {
-    if(size.numel()!=2)
+matrix<_T>& reshape(const matrix<_T>& M, const matrix<int>& size) {
+    if(numel(size)!=2)
         throw "[Error] reshape : Size matrix should have exactly 2 elements.";
 	matrix<_T>*v=new matrix<_T>(size.get(0), size.get(1));
 
 	int i(-1);
 
-	while ((++i) < MIN(size.get(0)*size.get(1),this->size[0]*this->size[1]))
-		(*v)[i-(i/size.get(0))*size.get(0)][i/size.get(0)] = this->get(i);
+	while ((++i) < MIN(size.get(0)*size.get(1),numel(M)))
+		(*v)[i-(i/size.get(0))*size.get(0)][i/size.get(0)] = M.get(i);
 
 	return *v;
 }
@@ -227,39 +239,13 @@ matrix<_T>& matrix<_T>::operator=(const matrix<_U>& M){
 }
 
 /*
-template <class _T>
-matrix<_T>& matrix<_T>::operator = (const matrix<_T>& m) {
-	if (size(*this)!=size(m)) {
-		if (row) {
-			for (int i = 0; i < row; ++i)
-				delete[] mtr[i];
-			delete[] mtr;
-		}
-		row = m.row;
-		col = m.col;
-		mtr = new _T*[m.row];
-		for (int i = 0; i < m.row; ++i) {
-			mtr[i] = new _T[m.col];
-			for (int j = 0; j < m.col; ++j)
-				mtr[i][j] = m.get(i, j);
-		}
-	}else
-		for (int i = 0; i < m.row; ++i)
-			for (int j = 0; j < m.col; ++j)
-				mtr[i][j] = m.get(i, j);
-	return *this;
-}
-
-
-
-
 template <class _T, class _U>
 auto operator +(const _U& t, const matrix<_T>& m)->matrix<decltype(_T(0) + _U(0))> {
 	matrix<_T> r(m);
 	for (int i = 0; i < r.row; ++i)
 		for (int j = 0; j < r.col; ++j)
 			r[i][j] += t;
-	return r;
+	return *r;
 }
 
 template <class _T, class _U>
@@ -684,4 +670,3 @@ matrix<_T> fht(const matrix<_T> &y) {
 }*/
 
 #endif
-
