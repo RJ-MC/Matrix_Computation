@@ -32,3 +32,6 @@
 *.app
 
 main.cpp
+*.dev
+*.layout
+*.win
