@@ -1,5 +1,5 @@
 # Matrix_Computation
-Implementation of *Matrix Computations (4th)* by `C++`.
+Implementation of *Matrix Computations (4th)* via `C++`.
 
 ## Class `matrix`
 
