@@ -15,6 +15,7 @@ public:
 	_T** mtr;
 
 	matrix(int row = 0, int col = 0, initializer_list<_T>list = initializer_list<_T>());
+	matrix(const matrix<int>&, initializer_list<_T>list);
 	matrix(const matrix<_T> &);
 	~matrix();
 	

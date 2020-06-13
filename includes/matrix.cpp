@@ -54,6 +54,23 @@ matrix<_T>::matrix(int row, int col, initializer_list<_T>list){
 }
 
 template <class _T>
+matrix<_T>::matrix(const matrix<int>& Size, initializer_list<_T>list){
+    size[0]=Size.get(0);
+    size[1]=Size.get(1);
+	mtr = new _T*[size[0]];
+	for (int i = 0; i < size[0]; ++i)
+		mtr[i] = new _T[size[1]]();
+	int _row_ind = 0, _col_ind = -1;
+	for (auto elem : list)
+		if (++_col_ind < size[1])
+			mtr[_row_ind][_col_ind] = elem;
+   		else if (++_row_ind < size[0])
+			mtr[_row_ind][_col_ind=0] = elem;
+		else
+			break;
+}
+
+template <class _T>
 matrix<_T>::~matrix() {
 	if (size[0]) {
 		for (int i = 0; i < size[0]; ++i)
@@ -143,8 +160,8 @@ matrix<int>& ind2sub(const matrix<int>& ind, const matrix<_T>& size) {
 }
 
 template <class _T>
-matrix<int> size(const matrix<_T>& M){
-    return matrix<int>(2,1,{M.size[0],M.size[1]});
+matrix<int>& size(const matrix<_T>& M){
+    return *(new matrix<int>(2,1,{M.size[0],M.size[1]}));
 }
 
 template <class _T>
@@ -236,58 +253,43 @@ matrix<_T>& matrix<_T>::operator=(const matrix<_U>& M){
     return *this;
 }
 
-/*
 template <class _T, class _U>
-auto operator +(const _U& t, const matrix<_T>& m)->matrix<decltype(_T(0) + _U(0))> {
-	matrix<_T> r(m);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] += t;
+auto operator +(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0) + _U(0))>& {
+	matrix<decltype(_T(0) + _U(0))>* r=new matrix<decltype(_T(0) + _U(0))>(m1);
+	for (int i = 0; i < (size(m1)[0]); ++i)
+		for (int j = 0; j < (size(m1)[1]); ++j)
+			(r->operator[](i))[j] += m2.get(i,j);
 	return *r;
 }
 
 template <class _T, class _U>
-auto operator - (const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0) - _U(0))> {
-	typedef decltype(_T(0) - _U(0)) _V;
-	matrix<_V> r(0, 0);
-	if (size(m1)==size(m2)) {
-		r = m1;
-		for (int i = 0; i < r.row; ++i)
-			for (int j = 0; j < r.col; ++j)
-				r[i][j] -= m2.get(i, j);
-	}
-	else
-		throw "[Error] Operator - : Sizes do not match.";
-	return r;
+auto operator -(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0) - _U(0))>& {
+	matrix<decltype(_T(0) - _U(0))>* r=new matrix<decltype(_T(0) - _U(0))>(m1);
+	for (int i = 0; i < (size(m1).get(0)); ++i)
+		for (int j = 0; j < (size(m1).get(1)); ++j)
+			(r->operator[](i))[j] -= m2.get(i,j);
+	return *r;
 }
 
 template <class _T, class _U>
-auto operator * (const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0)*_U(0))> {
-	typedef decltype(_T(0)*_U(0)) _V;
-	matrix<_V> r(0, 0);
-	if (m1.col == m2.row) {
-		r = matrix<_T>(m1.row, m2.col);
-		for (int i = 0; i < r.row; ++i)
-			for (int j = 0; j < r.col; ++j)
-				for (int k = 0; k < m1.col; ++k)
-					r[i][j] += m1.get(i, k)*m2.get(k, j);
-	}
-	else if (m1.row == 1 && m1.col == 1) {
-		r = matrix<_T>(m2.row, m2.col);
-		for (int i = 0; i < r.row; ++i)
-			for (int j = 0; j < r.col; ++j)
-				r[i][j] = m1.get(0, 0)*m2.get(i, j);
-	}
-	else if (m2.row == 1 && m2.col == 1) {
-		r = matrix<_T>(m1.row, m1.col);
-		for (int i = 0; i < r.row; ++i)
-			for (int j = 0; j < r.col; ++j)
-				r[i][j] = m2.get(0, 0)*m1.get(i, j);
-	}
-	else
-		throw "[Error] Operator * : Sizes do not match.";
-	return r;
+auto operator ^(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0) * _U(0))>& {
+	matrix<decltype(_T(0) * _U(0))>* r=new matrix<decltype(_T(0) * _U(0))>(m1);
+	for (int i = 0; i < (size(m1).get(0)); ++i)
+		for (int j = 0; j < (size(m1).get(1)); ++j)
+			(r->operator[](i))[j] *= m2.get(i,j);
+	return *r;
 }
+
+template <class _T, class _U>
+auto operator /(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0) / _U(1))>& {
+	matrix<decltype(_T(0) / _U(1))>* r=new matrix<decltype(_T(0) / _U(1))>(m1);
+	for (int i = 0; i < (size(m1).get(0)); ++i)
+		for (int j = 0; j < (size(m1).get(1)); ++j)
+			(r->operator[](i))[j] /= m2.get(i,j);
+	return *r;
+}
+
+/*
 
 template <class _T = int>
 const matrix<_T> Id(int n, const _T& t = 1) {
