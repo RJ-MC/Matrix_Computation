@@ -163,11 +163,9 @@ matrix<_T>& matrix<_T>::get (const matrix<int>& ind) const {
 
 template <class _T>
 matrix<_T>& matrix<_T>::get (const matrix<int>& row, const matrix<int>& col) const{
-    if(numel(row)!=numel(col))
-        throw "[Error] Operator [] : Two indicator matrices must have same length.";
-    matrix<_T>* M=new matrix<_T>(numel(row),numel(row));
+    matrix<_T>* M=new matrix<_T>(numel(row),numel(col));
     for(int i=0;i<numel(row);i++)
-        for(int j=0;j<numel(row);j++)
+        for(int j=0;j<numel(col);j++)
             (*M)[i][j]=this->get(row.get(i),col.get(j));
 	return *M;
 }
