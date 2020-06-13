@@ -13,10 +13,13 @@ public:
 
 	int size[2];
 	_T** mtr;
+	_T type;
 
-	matrix(int row = 0, int col = 0, initializer_list<_T>list = initializer_list<_T>());
+	matrix(int row, int col, initializer_list<_T>list = initializer_list<_T>());
 	matrix(const matrix<int>&, initializer_list<_T>list);
 	matrix(const matrix<_T> &);
+	template <class _U>
+	matrix(const matrix<_U> &);
 	~matrix();
 	
 	_T* operator[] (int _row);
@@ -31,9 +34,6 @@ public:
 	
 	matrix T(bool _conj = true) const;
 	
-	template <class _U>
-	operator matrix<_U>() const;
-	
 	matrix<_T>& operator=(const matrix<_T>& );
 	template <class _U>
 	matrix<_T>& operator=(const matrix<_U>& );
@@ -41,6 +41,6 @@ public:
 };
 
 //What happens to me here?
-#include "matrix.cpp"
+#include "matrix.hpp"
 
 #endif

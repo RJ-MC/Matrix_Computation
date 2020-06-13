@@ -5,7 +5,7 @@ using namespace std;
 
 int main() {
 	
-	cout<<(matrix<int>(2,1,{2,2})^matrix<int>(2,1,{2,3}));
+	cout<<(5*eye(5)/(8.0*ones(matrix<int>(2,1,{5,5}))));
 
 	return 0;
 }
