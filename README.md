@@ -103,8 +103,8 @@ chs(M,f);           // return a row-1 matrix consisting of maximum value of each
                     // Example: For int matrix M,
                     //      chs(M,(bool(*)(const int&,const int&))
                     //      ([](const int& a,const int& b)->bool{return a>=b;}));)=max(M).
-size(M);  	        // return a 2-by-1 matrix indicating row and column numbers.
-numel(M);	        // return the number of elements.
+size(M);            // return a 2-by-1 matrix indicating row and column numbers.
+numel(M);           // return the number of elements.
 reshape(M,Size);    // Size is an at-least-2-element matrix.
 vecnorm(M,p=2);     // return a row-1 matrix consisting of lp norm of each column.
 diag(M,n=0);        // return the n-offset diagonal of M as a row-1 matrix.
@@ -113,4 +113,4 @@ ltri(M,n=0);        // return the upper/lower part of M with offset n;
 ```
 </details>
 
-## Chapter 1    Matrix Multiplication
+## `Chapter 1` &emsp; Matrix Multiplication
