@@ -3,9 +3,18 @@ using namespace std;
 
 #include "includes/matrix.h"
 
+typedef matrix<int> MI;
+
 int main() {
 	
-	cout<<(5*eye(5)/(8.0*ones(matrix<int>(2,1,{5,5}))));
+	auto m=reshape(linspace(1,12),MI(2,1,{3,4}));
+	
+	try{
+		cout<<m<<ltri(m,1);
+	}
+	catch(const string& e){
+		cout<<e;
+	}
 
 	return 0;
 }

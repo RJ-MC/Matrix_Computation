@@ -5,7 +5,7 @@
 #include "matrix.h"
 
 #include <cmath>
-#include <tuple>
+#include <string>
 #include <initializer_list>
 #include <type_traits>
 
@@ -38,7 +38,7 @@ COMPLEX_OPS(/)
 #undef COMPLEX_OPS
 
 template <class _T>
-matrix<_T>::matrix(int row, int col, initializer_list<_T>list):type(1){
+matrix<_T>::matrix(int row, int col, initializer_list<_T>list){
     size[0]=row;
     size[1]=col;
 	mtr = new _T*[row];
@@ -55,7 +55,7 @@ matrix<_T>::matrix(int row, int col, initializer_list<_T>list):type(1){
 }
 
 template <class _T>
-matrix<_T>::matrix(const matrix<int>& Size, initializer_list<_T>list):type(1){
+matrix<_T>::matrix(const matrix<int>& Size, initializer_list<_T>list){
     size[0]=Size.get(0);
     size[1]=Size.get(1);
 	mtr = new _T*[size[0]];
@@ -121,9 +121,21 @@ ostream& operator << (ostream &os, const matrix<_T>& m) {
 	os.precision(2);
 	if (m.size[0]*m.size[1]) {
 		for (int i = 0; i < m.size[0]; ++i) {
+			if(i==0)
+				os << "©°";
+			else if(i==m.size[0]-1)
+				os<< "©¸";
+			else
+				os<< "©¦";
 			for (int j = 0; j < m.size[1]; ++j)
 				os << " " << setw(15) << right << m.get(i, j);
-			os << "\n";
+			if(i==0)
+				os << "©´";
+			else if(i==m.size[0]-1)
+				os<< "©¼";
+			else
+				os<< "©¦";
+			os<<"\n";
 		}
 	}
 	else
@@ -175,7 +187,7 @@ matrix<int>& ind2sub(const matrix<int>& ind, const matrix<_T>& size) {
 
 template <class _T>
 matrix<int>& size(const matrix<_T>& M){
-    return *(new matrix<int>(2,1,{M.size[0],M.size[1]}));
+    return *(new matrix<int>(1,2,{M.size[0],M.size[1]}));
 }
 
 template <class _T>
@@ -223,15 +235,15 @@ matrix<_T>& matrix<_T>::set(const matrix<int>& ind, const matrix<_U>& val) {
 			for (int j = 0; j < val.numel(); ++j)
 				mtr[i-i/val.size[0]*val.size[0]][i/val.size[0]] = _T(val.get(j));
 	else
-		throw("[Error] set : Sizes do not match.");
+		throw(string("[Error] set : Sizes do not match."));
 	
 	return *this;
 }
 
 template <class _T>
 matrix<_T>& reshape(const matrix<_T>& M, const matrix<int>& size) {
-    if(numel(size)!=2)
-        throw "[Error] reshape : Size matrix should have exactly 2 elements.";
+    if(numel(size)<2)
+        throw(string("[Error] reshape : Size matrix should have exactly 2 elements."));
 	matrix<_T>*v=new matrix<_T>(size.get(0), size.get(1));
 
 	int i(-1);
@@ -267,354 +279,60 @@ matrix<_T>& matrix<_T>::operator=(const matrix<_U>& M){
     return *this;
 }
 
-template <class _T, class _U>
-auto operator +(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(m1.type+m2.type)>::type> {
-	matrix<typename remove_const<decltype(m1.type+m2.type)>::type>  r(m1);
-	for (int i = 0; i < size(m1).get(0); ++i)
-		for (int j = 0; j < size(m1).get(1); ++j)
-			r[i][j] += m2.get(i,j);
-	return r;
+#define STRINGIFY2(X) #X
+#define STRINGIFY(X) STRINGIFY2(X)
+
+#define MATRIX_OPS(OP)\
+template <class _T, class _U>\
+auto operator OP(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(_T(1) OP _U(1))>::type>& {\
+	if(size(m1)!=size(m2))\
+		throw(string(STRINGIFY([Error] Operator OP : Size do not match.)));\
+	auto *r= new\
+		matrix<typename remove_const<decltype(_T(1) OP _U(1))>::type> (m1);\
+	for (int i = 0; i < size(m1).get(0); ++i)\
+		for (int j = 0; j < size(m1).get(1); ++j)\
+			r->mtr[i][j] = r->mtr[i][j] OP m2.get(i,j);\
+	return *r;\
+}\
+template <class _T, class _U>\
+auto operator OP(const matrix<_T>& m1, const _U& m2)->matrix<typename remove_const<decltype(_T(1) OP _U(1))>::type>& {\
+	auto  *r= new matrix<typename remove_const<decltype(_T(1) OP _U(1))>::type> (m1);\
+	for (int i = 0; i < size(m1).get(0); ++i)\
+		for (int j = 0; j < size(m1).get(1); ++j)\
+			r->mtr[i][j] = r->mtr[i][j] OP m2;\
+	return *r;\
+}\
+template <class _T, class _U>\
+auto operator OP(const _T& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(_T(1) OP _U(1))>::type>& {\
+	auto *r= new matrix<typename remove_const<decltype(_T(1) OP _U(1))>::type> (m2);\
+	for (int i = 0; i < size(m2).get(0); ++i)\
+		for (int j = 0; j < size(m2).get(1); ++j)\
+			r->mtr[i][j] = m1 OP r->mtr[i][j];\
+	return *r;\
 }
-template <class _T, class _U>
-auto operator +(const matrix<_T>& m1, const _U& m2)->matrix<typename remove_const<decltype(m1.type+m2)>::type> {
-	matrix<typename remove_const<decltype(m1.type+m2)>::type>  r(m1);
-	for (int i = 0; i < size(m1).get(0); ++i)
-		for (int j = 0; j < size(m1).get(1); ++j)
-			r[i][j] += m2;
-	return r;
-}
-template <class _T, class _U>
-auto operator +(const _T& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(m1+m2.type)>::type> {
-	return m2+m1;
-}
+MATRIX_OPS(+)
+MATRIX_OPS(-)
+MATRIX_OPS(*)
+MATRIX_OPS(/)
+#undef MATRIX_OPS
 
 template <class _T, class _U>
-auto operator -(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(m1.type-m2.type)>::type> {
-	matrix<typename remove_const<decltype(m1.type+m2.type)>::type>  r(m1);
-	for (int i = 0; i < size(m1).get(0); ++i)
-		for (int j = 0; j < size(m1).get(1); ++j)
-			r[i][j] -= m2.get(i,j);
-	return r;
-}
-template <class _T, class _U>
-auto operator -(const matrix<_T>& m1, const _U& m2)->matrix<typename remove_const<decltype(m1.type-m2)>::type> {
-	matrix<typename remove_const<decltype(m1.type+m2)>::type>  r(m1);
-	for (int i = 0; i < size(m1).get(0); ++i)
-		for (int j = 0; j < size(m1).get(1); ++j)
-			r[i][j] -= m2;
-	return r;
-}
-template <class _T, class _U>
-auto operator -(const _T& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(m1+m2.type)>::type> {
-	matrix<typename remove_const<decltype(m1+m2.type)>::type>  r(m2);
-	for (int i = 0; i < size(m2).get(0); ++i)
-		for (int j = 0; j < size(m2).get(1); ++j)
-			r[i][j] = m1-r[i][j];
-	return r;
-}
-
-template <class _T, class _U>
-auto operator *(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(m1.type*m2.type)>::type> {
-	matrix<typename remove_const<decltype(m1.type*m2.type)>::type>  r(m1);
-	for (int i = 0; i < size(m1).get(0); ++i)
-		for (int j = 0; j < size(m1).get(1); ++j)
-			r[i][j] *= m2.get(i,j);
-	return r;
-}
-template <class _T, class _U>
-auto operator *(const matrix<_T>& m1, const _U& m2)->matrix<typename remove_const<decltype(m1.type*m2)>::type> {
-	matrix<typename remove_const<decltype(m1.type*m2)>::type>  r(m1);
-	for (int i = 0; i < size(m1).get(0); ++i)
-		for (int j = 0; j < size(m1).get(1); ++j)
-			r[i][j] *= m2;
-	return r;
-}
-template <class _T, class _U>
-auto operator *(const _T& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(m1*m2.type)>::type> {
-	return m2*m1;
-}
-
-template <class _T, class _U>
-auto operator /(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0) / _U(1))> {
-	matrix<decltype(_T(0) / _U(1))> r(m1);
-	for (int i = 0; i < (size(m1).get(0)); ++i)
-		for (int j = 0; j < (size(m1).get(1)); ++j)
-			r[i][j] /= m2.get(i,j);
-	return r;
-}
-template <class _T, class _U>
-auto operator /(const matrix<_T>& m1, const _U& m2)->matrix<typename remove_const<decltype(m1.type/m2)>::type> {
-	matrix<typename remove_const<decltype(m1.type+m2)>::type>  r(m1);
-	for (int i = 0; i < size(m1).get(0); ++i)
-		for (int j = 0; j < size(m1).get(1); ++j)
-			r[i][j] /= m2;
-	return r;
-}
-template <class _T, class _U>
-auto operator /(const _T& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(m1/m2.type)>::type> {
-	matrix<typename remove_const<decltype(m1/m2.type)>::type>  r(m2);
-	for (int i = 0; i < size(m2).get(0); ++i)
-		for (int j = 0; j < size(m2).get(1); ++j)
-			r[i][j] = m1/r[i][j];
-	return r;
-}
-
-template <class _T = int>
-matrix<_T> eye(int n) {
-	matrix<_T> I(n, n);
-	for (int i = 0; i < n; ++i)
-		I[i][i] = 1;
-	return I;
-}
-
-template <class _T = int>
-matrix<_T> ones(const matrix<int> &size) {
-	matrix<_T> I(size,{});
-	for (int i = 0; i < size.get(0); ++i)
-		for(int j=0;j<size.get(1);++j)
-			I[i][j] = 1;
-	return I;
+auto operator ^(matrix<_T>& m1, matrix<_U>& m2)->matrix<typename remove_const<decltype(m1.type * m2.type)>::type>& {
+	if(m1.size[1]!=m2.size[0])
+		throw(string("STRINGIFY([Error] Operator ^ : Size do not match."));
+	matrix<typename remove_const<decltype(m1.type * m2.type)>::type>* r= new 
+		matrix<typename remove_const<decltype(m1.type * m2.type)>::type>(m1.size[0],m2.size[1]);
+	_T s;
+	for(int i=0;i<m1.size[0];++i)
+	    for(int k=0;k<m2.size[0];++k){
+	        s=m1[i][k];
+	        for(int j=0;j<m2.size[1];++j)
+	            r->mtr[i][j]+=s*m2[k][j];
+		}
+	return *r;
 }
 
 /*
-
-// template class cannot have implicit conversion
-template <typename _T, typename _U>
-auto operator* (const _T& t, const matrix<_U>& m)->matrix<decltype(_T(0)*_U(0))> {
-	matrix<decltype(_T(0)*_U(0))> r(m);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] *= t;
-	return r;
-}
-template <class _T, class _U>
-auto operator * (const matrix<_U>& m, const _T& t)->matrix<decltype(_T(0)*_U(0))> {
-	matrix<decltype(_T(0)*_U(0))> r(m);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] *= t;
-	return r;
-}
-template <class _T, class _U>
-auto operator / (const matrix<_U>& m, const _T& t)->matrix<decltype(_U(0) / _T(1))> {
- matrix<decltype(_T(0)*_U(0))> r(m);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] /= t;
-	return r;
-}
-template <class _T, class _U>
-auto operator / (const _T& t, const matrix<_U>& m)->matrix<decltype(_T(0) / _U(1))> {
-	matrix<decltype(_T(0) / _U(1))> r(m);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] = t / r[i][j];
-	return r;
-}
-template <class _T, class _U>
-auto operator +(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0) + _U(0))> {
-	typedef decltype(_T(0) + _U(0)) _V;
-	matrix<_V> r(0, 0);
-	if (m1.row == m2.row&m1.col == m2.col) {
-		r = m1;
-		for (int i = 0; i < r.row; ++i)
-			for (int j = 0; j < r.col; ++j)
-				r[i][j] += m2.get(i, j);
-	}
-	else
-		throw "[Error] Operator + : Sizes not match.";
-	return r;
-}
-template <class _T, class _U>
-auto operator +(const matrix<_T>& m, const _U& t)->matrix<decltype(_T(0) + _U(0))> {
- matrix<_T> r(m);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] += t;
-	return r;
-}
-template <class _T, class _U>
-auto operator -(const matrix<_T>& m, const _U& t)->matrix<decltype(_T(0) + _U(0))> {
-	matrix<_T> r(m);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] -= t;
-	return r;
-}
-template <class _T, class _U>
-auto operator -(const _U& t, const matrix<_T>& m)->matrix<decltype(_T(0) + _U(0))> {
- matrix<_T> r(m);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] -= t;
-	return r;
-}
-template <class _T, class _U>
-auto point_mult(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0)*_U(0))> {
-	matrix<decltype(_T(0)*_U(0))> r(m1);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] *= m2.get(i, j);
-	return r;
-}
-template <class _T, class _U>
-auto point_devd(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_T(0) / _U(1))> {
-	matrix<decltype(_T(0) / _U(1))> r(m1);
-	for (int i = 0; i < r.row; ++i)
-		for (int j = 0; j < r.col; ++j)
-			r[i][j] *= m2.get(i, j);
-	return r;
-}
-
-template <class _T>
-matrix<_T> operator ^ (const matrix<_T> &m, int n) {
-	matrix<_T> RES(Id(m.row)), temp(m);
-	if (n >= 0)
-		while (n) {
-			if (n & 1)
-				RES = RES * temp;
-			n >>= 1;
-			temp = temp * temp;
-		}
-	else
-		throw("operator ^ : negative power under construction.");
-	return RES;
-}
-
-template <class _T, class _U>
-auto dot_mult (const matrix<_T> &m1, const matrix<_U> &m2) -> matrix<decltype(_T(1)*_U(1))> {
-	if(size(m1)!=size(m2))
-		throw("[Error] .* : Sizes do not match.");
-	matrix<decltype(_T(1)*_U(1))> RES(m1);
-	for(int i=0;i<m1.row;++i)
-		for(int j=0;j<m1.col;++j)
-			RES[i][j]*=m2.get(i,j);
-	return RES;
-}
-
-template <class _T, class _U>
-auto dot_pow (const matrix<_T> &m1, const matrix<_U> &m2) -> matrix<decltype(pow(_T(1),_U(1)))> {
-	matrix<decltype(pow(_T(1),_U(1)))> RES(m1);
-	for(int i=0;i<m1.row;++i)
-		for(int j=0;j<m1.col;++j)
-			RES[i][j]=pow(m1.get(i,j),m2.get(i,j));
-	return RES;
-}
-
-template <class _T>
-const _T norm(const matrix<_T>& m) {
-	_T n(0);
-	for (int i = 0; i < m.row; ++i)
-		for (int j = 0; j < m.col; ++j)
-			n += norm(m.get(i, j));
-	n = sqrt(n);
-	return n;
-}
-
-template <class _T>
-matrix<_T> permutation(const matrix<_T>& m, const matrix<int>& p, bool _permute_row = true) {
-	matrix<_T> res(0, 0);
-	if (p.row != 1)	throw("[Warning] permutation : only the first row of permutation matrix will be used.");
-	if (_permute_row) {
-		res = matrix<_T>(p.col, m.col);
-		for (int i = 0; i < p.col; ++i)
-			for (int j = 0; j < m.col; ++j)
-				res[i][j] = m.get(p.get(0, i), j);
-	}
-	else {
-		res = matrix<_T>(m.row, p.col);
-		for (int i = 0; i < m.row; ++i)
-			for (int j = 0; j < p.col; ++j)
-				res[i][j] = m.get(i, p.get(0, j));
-	}
-	return res;
-}
-
-
-template <class _T>
-matrix<_T> diag(const initializer_list<matrix<_T>>& list) {
-	auto it = list.begin();
-	if (list.size() == 1) {
-		if (it->row == 1) {
-			matrix<_T> d(it->col, it->col);
-			for (int i = 0; i < d.col; ++i)
-				d[i][i] = it->get(0, i);
-			return d;
-		}
-		else if (it->col == 1) {
-			matrix<_T> d(it->row, it->row);
-			for (int i = 0; i < d.row; ++i)
-				d[i][i] = it->get(i, 0);
-			return d;
-		}
-		else {
-			matrix<_T> d(MIN(it->row, it->col), 1);
-			for (int i = 0; i < d.row; ++i)
-				d[i][0] = it->get(i, i);
-			return d;
-		}
-	}
-	else {
-		int r(0), c(0), i, j;
-
-		for (; it != list.end(); ++it) {
-			r += it->row;
-			c += it->col;
-		}
-		matrix<_T> d(r, c);
-		r = 0;    c = 0;    it = list.begin();
-		for (; it != list.end(); ++it) {
-			for (i = 0; i < it->row; ++i)
-				for (j = 0; j < it->row; ++j)
-					d[r + i][c + j] = it->get(i, j);
-
-			r += it->row;
-			c += it->col;
-		}
-		return d;
-	}
-}
-
-template <class _T, class _U, class _V = int>
-auto seq(_T _start, _U _end, _V _step = 1)->matrix<decltype(_start + _end + _step)> {
-	typedef decltype(_start + _end + _step) _X;
-	matrix<_X> ir(1, MAX(0, int((_end - _start) / _step) + 1));
-	_X cur(_start);
-	for (int i = 0; i < ir.col; cur += _step, ++i)
-		ir[0][i] = cur;
-	return ir;
-}
-
-template <class _T>
-matrix<_T> matrix<_T>::utri(int ind) {
-	matrix<_T> u(*this);
-	for (int i = 0; i < row; ++i)
-		for (int j = 0; j < MIN(col, i - 1 + ind); ++j)
-			u[i][j] = 0;
-	return u;
-}
-
-template <class _T>
-matrix<_T> matrix<_T>::ltri(int ind) {
-	matrix<_T> u(*this);
-	for (int i = 0; i < row; ++i)
-		for (int j = i + 1 + ind; j < col; ++j)
-			u[i][j] = 0;
-	return u;
-}
-
-template<class _T>
-template<class _U>
-matrix<_T>::operator matrix<_U>() const {
-	matrix<_U> conv(row, col);
-	for (int i = 0; i < row; ++i)
-		for (int j = 0; j < col; ++j)
-			conv[i][j] = (_U)(this->get(i, j));
-	return conv;
-}
-
-
-
 template <class _T>
 tuple<matrix<_T>, matrix<_T>> qr(const matrix<_T>& m, const int& _start_row = 0) {
 	matrix<_T> q(Id(m.row, _T(1))), r(m), H(q), x;

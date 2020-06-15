@@ -7,13 +7,14 @@
 #include <initializer_list>
 using namespace std;
 
+
 template <class _T>
 class matrix {
-public:
 
 	int size[2];
 	_T** mtr;
-	_T type;
+	
+public:
 
 	matrix(int row, int col, initializer_list<_T>list = initializer_list<_T>());
 	matrix(const matrix<int>&, initializer_list<_T>list);
@@ -21,6 +22,8 @@ public:
 	template <class _U>
 	matrix(const matrix<_U> &);
 	~matrix();
+	
+	_T get_type();
 	
 	_T* operator[] (int _row);
 	const _T get(int) const;
@@ -38,9 +41,42 @@ public:
 	template <class _U>
 	matrix<_T>& operator=(const matrix<_U>& );
 	
+	template<class _U>
+	friend ostream& operator << (ostream &, const matrix<_U>&);
+	
+	template<class _U, class _V>
+	friend bool operator == (const matrix<_U>&, const matrix<_V>&);
+	
+	template <class _U>
+	friend int numel(const matrix<_U>&);
+	
+	template <class _U>
+	friend matrix<int>& size(const matrix<_U>& );
+	
+	#define MATRIX_OPS(OP)\
+	template <class _V, class _U>\
+	friend auto operator OP(const matrix<_V>& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(_V(1) OP _U(1))>::type>&;\
+	template <class _V, class _U>\
+	friend auto operator OP(const matrix<_V>& m1, const _U& m2)->matrix<typename remove_const<decltype(_V(1) OP _U(1))>::type>&;\
+	template <class _V, class _U>\
+	friend auto operator OP(const _V& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(_V(1) OP _U(1))>::type>&;
+	MATRIX_OPS(+)
+	MATRIX_OPS(-)
+	MATRIX_OPS(*)
+	MATRIX_OPS(/)
+	#undef MATRIX_OPS
+	
+	template <class _V, class _U>
+	friend auto operator ^(matrix<_V>& m1, matrix<_U>& m2)->matrix<typename remove_const<decltype(m1.type * m2.type)>::type>&;
+	
+	friend matrix<int>& eye(int);
+	friend matrix<int>& ones(const matrix<int> &);
+	
 };
 
 //What happens to me here?
 #include "matrix.hpp"
+#include "spc_mtr.hpp"
+#include "mtr_fcn.hpp"
 
 #endif
