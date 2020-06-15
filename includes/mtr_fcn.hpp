@@ -1,9 +1,35 @@
 #ifndef mtr_fcn_hpp
 #define mtr_fcn_hpp
 
+#include <cmath>
+#include <complex>
+
+#include "CONSTANTS.h"
 #include "matrix.h"
 
-#include <cmath>
+// Trick to allow type promotion
+template <typename T>
+struct identity_t { typedef T type; };
+
+// Make std::complex<> work better....
+#define COMPLEX_OPS(OP)								\
+template <typename _Tp>								\
+std::complex<_Tp>									\
+operator OP(std::complex<_Tp> lhs, 					\
+		const typename identity_t<_Tp>::type & rhs){\
+    return lhs OP rhs;								\
+}													\
+template <typename _Tp>								\
+std::complex<_Tp>									\
+operator OP(const typename identity_t<_Tp>::type 	\
+			& lhs, const std::complex<_Tp> & rhs){	\
+	return lhs OP rhs;								\
+}
+COMPLEX_OPS(+)
+COMPLEX_OPS(-)
+COMPLEX_OPS(*)
+COMPLEX_OPS(/)
+#undef COMPLEX_OPS
 
 template <class _T>
 matrix<_T> chs(const matrix<_T>& m, bool (*keep_fcn)(const _T&,const _T&)){
@@ -48,7 +74,7 @@ matrix<_T>& diag(const matrix<_T>& m,int n=0){
 }
 
 template <class _T>
-matrix<_T> utri(const matrix<_T>& m,int n=0){
+matrix<_T>& utri(const matrix<_T>& m,int n=0){
 	auto u=new matrix<_T>(m);
 	int r(MAX(0,n)),c(MAX(0,-n)),curr_c;
 	while(r<size(m).get(0)){
@@ -61,7 +87,7 @@ matrix<_T> utri(const matrix<_T>& m,int n=0){
 }
 
 template <class _T>
-matrix<_T> ltri(const matrix<_T>& m,int n=0){
+matrix<_T>& ltri(const matrix<_T>& m,int n=0){
 	auto l=new matrix<_T>(m);
 	int r(0),curr_c;
 	while(r<size(m).get(0)&&(r-n+1)<size(m).get(1)){
@@ -71,6 +97,59 @@ matrix<_T> ltri(const matrix<_T>& m,int n=0){
 		++r;
 	}
 	return *l;
+}
+
+template <class _T>
+matrix<_T>& sum(const matrix<_T>& m){
+	matrix<_T>* r;
+	if(size(m).get(0)==1){
+		r=new matrix<_T>(1,1);
+		for(int i=0;i<size(m).get(1);++i)
+			(*r)[0][0]+=m.get(0,i);
+	}else{
+		r=new matrix<_T>(m.get(linspace(0,size(m).get(1)-1)*size(m).get(0)));
+		for(int i=1;i<size(m).get(0);++i)
+			for(int j=0;j<size(m).get(1);++j)
+				(*r)[0][j]+=m.get(i,j);
+	}
+	return *r;
+}
+
+template <class _T>
+matrix<_T>& cmb(const matrix<_T>& m1, const matrix<_T>& m2, bool _row=true){
+	matrix<_T>* r;
+	if(_row){
+		if(size(m1).get(0)!=size(m2).get(0))
+			throw(string("[Error] cmb : Number of rows should be same."));
+		r=new matrix<_T>(size(m1).get(0),size(m1).get(1)+size(m2).get(1));
+		r->set(linspace(0,numel(m1)-1),m1);
+		r->set(linspace(0,numel(m2)-1)+numel(m1),m2);
+	}else{
+		if(size(m1).get(1)!=size(m2).get(1))
+			throw(string("[Error] cmb : Number of columns should be same."));
+	}
+	return *r;
+}
+
+template <class _T>
+auto fft(const matrix<_T>& m)->matrix<typename remove_const<decltype(complex<double>(1)*_T(1))>::type>&{
+	auto r=new matrix<typename remove_const<decltype(complex<double>(1)*_T(1))>::type>(m);
+	int n(pow(2,log2_64(numel(m))));
+	n=(n<numel(m)?2*n:n);
+	(*r)=reshape(m,matrix<int>(2,1,{1,n}));
+	
+	complex<double> w=exp(complex<double>(0,-1)*PI*2.0/n);
+	if(n>1){
+		auto yt=fft(r->get(linspace(0,n-1,2)));
+		auto yb=fft(r->get(linspace(1,n-1,2)));
+		auto z=(w^linspace(0,n/2-1))*yb;
+		r->set(linspace(0,n/2-1),yt+z);
+		r->set(linspace(n/2,n-1),yt-z);
+	}
+	
+	reshape(*r,size(m));
+	
+	return *r;
 }
 
 #endif

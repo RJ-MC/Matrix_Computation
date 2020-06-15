@@ -1,4 +1,4 @@
-# Matrix_Computation
+# Matrix_Computations
 Implementation of *Matrix Computations (4th)* via `C++`.
 
 ## Class `matrix`
@@ -17,19 +17,19 @@ Implementation of *Matrix Computations (4th)* via `C++`.
     <summary>Create matrix</summary>
 
     ```cpp
-    matrix<_T> M(n,m);		    // creates M as a n-by-m matrix of type _T with 0 ...
-    matrix<_T> M(n,m,{...});	// or elements listed in {...} with column-first order
-    matrix<_T> M(Size,{...};)   // Size is a matrix of at least 2 element.
-    ```	
+    matrix<_T> M(n,m);          // creates M as a n-by-m matrix of type _T with 0 ...
+    matrix<_T> M(n,m,{...});    // or elements listed in {...} with column-first order
+    matrix<_T> M(Size,{...});   // Size is a matrix of at least 2 element.
+    ```
     - Examples
-	```cpp
-	matrix<int> M(2,2);
-	matrix<int> M(2,2,{1,2,3});
-	matrix<int> M(2,2,{1,2,3,4,5});
-    matrix<int> M(matrix<int>(2,1,{2,2}),{});
-	```
-	define
-	<p align="center"><img src="https://latex.codecogs.com/png.latex?\begin{bmatrix}0&0\\0&0\end{bmatrix},\quad\begin{bmatrix}1&2\\3&0\end{bmatrix},\quad\begin{bmatrix}1&2\\3&4\end{bmatrix},\quad\begin{bmatrix}0&0\\0&0\end{bmatrix}."></p>
+        ```cpp
+        matrix<int> M(2,2);
+        matrix<int> M(2,2,{1,2,3});
+        matrix<int> M(2,2,{1,2,3,4,5});
+        matrix<int> M(matrix<int>(2,1,{2,2}),{});
+        ```
+        define
+        <p align="center"><img src="https://latex.codecogs.com/png.latex?\begin{bmatrix}0&0\\0&0\end{bmatrix},\quad\begin{bmatrix}1&2\\3&0\end{bmatrix},\quad\begin{bmatrix}1&2\\3&4\end{bmatrix},\quad\begin{bmatrix}0&0\\0&0\end{bmatrix}."></p>
     </details>
 
 
@@ -54,16 +54,16 @@ Implementation of *Matrix Computations (4th)* via `C++`.
     M.get(R,L);     // R is index matrix of row and L is of column.
     ```
     - Example
-	```cpp
-	matrix<int>(2,2,{1,2,3,4}).submtr(matrix<int>(2,1,{0,0}),matrix<int>(1,2,{1,0}));	// [2,1;2,1]
-	```
+        ```cpp
+        matrix<int>(2,2,{1,2,3,4}).submtr(matrix<int>(2,1,{0,0}),matrix<int>(1,2,{1,0}));   // [2,1;2,1]
+        ```
     </details>
 
 -   <details>
     <summary>Set submatrix</summary>
 
     ```cpp
-    M.set(I,V);	        // I is index matrix, V is value matrix with same element number of I.
+    M.set(I,V);         // I is index matrix, V is value matrix with same element number of I.
     ```
     </details>
 </details>
@@ -72,8 +72,8 @@ Implementation of *Matrix Computations (4th)* via `C++`.
 <summary>Advanced Opreations</summary>
 
 ```cpp
-M.T();   	        // return conjugate of M.
-M.T(0);   	        // return transpose of M.
+M.T();              // return conjugate of M.
+M.T(0);             // return transpose of M.
 M*N;                // point-wise multiplication of two same-size matricies.
 M/N;                // point-wise division of two same-size matricies.
 M^N;                // matrix multiplication.
@@ -86,6 +86,7 @@ M^N;                // matrix multiplication.
 ```cpp
 eye(n);             // create an identity matrix of size n.
 ones(Size);         // create an all-1 matrix of size matrix Size.
+zeros(Size);        // create an all-0 matrix of size matrix Size.
 linspace(n,m,d);    // create a row-1 matrix, starting from n,
                     // increasing by d, and ending with the number
                     // whose next step will be greater than m.
@@ -114,3 +115,11 @@ ltri(M,n=0);        // return the upper/lower part of M with offset n;
 </details>
 
 ## `Chapter 1` &emsp; Matrix Multiplication
+
+<details>
+<summary>Matrix functions</summary>
+
+```cpp
+fft(M);         // return the DFT of M.
+```
+</details>

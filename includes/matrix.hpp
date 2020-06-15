@@ -4,43 +4,18 @@
 #include "CONSTANTS.h"
 #include "matrix.h"
 
+#include <complex>
 #include <cmath>
 #include <string>
 #include <initializer_list>
 #include <type_traits>
 
-#include <complex>
-#include <algorithm>
 using namespace std;
-
-// Trick to allow type promotion
-template <typename T>
-struct identity_t { typedef T type; };
-
-// Make std::complex<> work better....
-#define COMPLEX_OPS(OP)								\
-template <typename _Tp>								\
-std::complex<_Tp>									\
-operator OP(std::complex<_Tp> lhs, 					\
-		const typename identity_t<_Tp>::type & rhs){\
-    return lhs OP rhs;								\
-}													\
-template <typename _Tp>								\
-std::complex<_Tp>									\
-operator OP(const typename identity_t<_Tp>::type 	\
-			& lhs, const std::complex<_Tp> & rhs){	\
-	return lhs OP rhs;								\
-}
-COMPLEX_OPS(+)
-COMPLEX_OPS(-)
-COMPLEX_OPS(*)
-COMPLEX_OPS(/)
-#undef COMPLEX_OPS
 
 template <class _T>
 matrix<_T>::matrix(int row, int col, initializer_list<_T>list){
-    size[0]=row;
-    size[1]=col;
+    sze[0]=row;
+    sze[1]=col;
 	mtr = new _T*[row];
 	for (int i = 0; i < row; ++i)
 		mtr[i] = new _T[col]();
@@ -56,16 +31,16 @@ matrix<_T>::matrix(int row, int col, initializer_list<_T>list){
 
 template <class _T>
 matrix<_T>::matrix(const matrix<int>& Size, initializer_list<_T>list){
-    size[0]=Size.get(0);
-    size[1]=Size.get(1);
-	mtr = new _T*[size[0]];
-	for (int i = 0; i < size[0]; ++i)
-		mtr[i] = new _T[size[1]]();
+    sze[0]=Size.get(0);
+    sze[1]=Size.get(1);
+	mtr = new _T*[sze[0]];
+	for (int i = 0; i < sze[0]; ++i)
+		mtr[i] = new _T[sze[1]]();
 	int _row_ind = 0, _col_ind = -1;
 	for (auto elem : list)
-		if (++_col_ind < size[1])
+		if (++_col_ind < sze[1])
 			mtr[_row_ind][_col_ind] = elem;
-   		else if (++_row_ind < size[0])
+   		else if (++_row_ind < sze[0])
 			mtr[_row_ind][_col_ind=0] = elem;
 		else
 			break;
@@ -73,8 +48,8 @@ matrix<_T>::matrix(const matrix<int>& Size, initializer_list<_T>list){
 
 template <class _T>
 matrix<_T>::~matrix() {
-	if (size[0]) {
-		for (int i = 0; i < size[0]; ++i)
+	if (sze[0]) {
+		for (int i = 0; i < sze[0]; ++i)
 			delete[] mtr[i];
 		delete[] mtr;
 	}
@@ -82,25 +57,24 @@ matrix<_T>::~matrix() {
 
 template <class _T>
 matrix<_T>::matrix(const matrix<_T> &M) {
-	size[0]=M.size[0];
-	size[1]=M.size[1];
-	mtr = new _T*[size[0]];
-	for (int i = 0; i < size[0]; ++i) {
-		mtr[i] = new _T[size[1]];
-		for (int j = 0; j < size[1]; ++j)
+	sze[0]=M.sze[0];
+	sze[1]=M.sze[1];
+	mtr = new _T*[sze[0]];
+	for (int i = 0; i < sze[0]; ++i) {
+		mtr[i] = new _T[sze[1]];
+		for (int j = 0; j < sze[1]; ++j)
 			mtr[i][j] = M.get(i, j);
 	}
 }
-
 template <class _T>
 template <class _U>
-matrix<_T>::matrix(const matrix<_U> &M) {
-	size[0]=M.size[0];
-	size[1]=M.size[1];
-	mtr = new _T*[size[0]];
-	for (int i = 0; i < size[0]; ++i) {
-		mtr[i] = new _T[size[1]];
-		for (int j = 0; j < size[1]; ++j)
+matrix<_T>::matrix(const matrix<_U> &M){
+	sze[0]=size(M).get(0);
+	sze[1]=size(M).get(1);
+	mtr = new _T*[sze[0]];
+	for (int i = 0; i < sze[0]; ++i) {
+		mtr[i] = new _T[sze[1]];
+		for (int j = 0; j < sze[1]; ++j)
 			mtr[i][j] = M.get(i, j);
 	}
 }
@@ -112,26 +86,26 @@ const _T matrix<_T>::get(int i, int j) const {
 
 template <class _T>
 const _T matrix<_T>::get(int ind) const {
-	return mtr[ind - ind / size[0] * size[0]][ind / size[0]];
+	return mtr[ind - ind / sze[0] * sze[0]][ind / sze[0]];
 }
 
 template <class _T>
 ostream& operator << (ostream &os, const matrix<_T>& m) {
 	os.setf(ios::fixed, ios::floatfield);
 	os.precision(2);
-	if (m.size[0]*m.size[1]) {
-		for (int i = 0; i < m.size[0]; ++i) {
+	if (m.sze[0]*m.sze[1]) {
+		for (int i = 0; i < m.sze[0]; ++i) {
 			if(i==0)
 				os << "©°";
-			else if(i==m.size[0]-1)
+			else if(i==m.sze[0]-1)
 				os<< "©¸";
 			else
 				os<< "©¦";
-			for (int j = 0; j < m.size[1]; ++j)
+			for (int j = 0; j < m.sze[1]; ++j)
 				os << " " << setw(15) << right << m.get(i, j);
 			if(i==0)
 				os << "©´";
-			else if(i==m.size[0]-1)
+			else if(i==m.sze[0]-1)
 				os<< "©¼";
 			else
 				os<< "©¦";
@@ -139,20 +113,20 @@ ostream& operator << (ostream &os, const matrix<_T>& m) {
 		}
 	}
 	else
-		os << "Empty-" << m.size[0] << "x" << m.size[1] << "-matrix\n";
+		os << "Empty-" << m.sze[0] << "x" << m.sze[1] << "-matrix\n";
 	return os;
 }
 
 template <class _T>
 matrix<_T> matrix<_T>::T(bool _conj) const {
-	matrix<_T> m(size[1], size[0]);
+	matrix<_T> m(sze[1], sze[0]);
 	if(_conj)
-		for (int i = 0; i < size[1]; ++i)
-			for (int j = 0; j < size[0]; ++j)
+		for (int i = 0; i < sze[1]; ++i)
+			for (int j = 0; j < sze[0]; ++j)
 				m[i][j] = conj(mtr[j][i]);
 	else
-		for (int i = 0; i < size[1]; ++i)
-			for (int j = 0; j < size[0]; ++j)
+		for (int i = 0; i < sze[1]; ++i)
+			for (int j = 0; j < sze[0]; ++j)
 				m[i][j] = mtr[j][i];
 	return m;
 }
@@ -169,7 +143,7 @@ matrix<int>& ind2sub(int ind, const matrix<_T>& size) {
 
 template <class _T>
 int numel(const matrix<_T>& M) {
-	return M.size[0] * M.size[1];
+	return M.sze[0] * M.sze[1];
 }
 
 template <class _T>
@@ -187,14 +161,14 @@ matrix<int>& ind2sub(const matrix<int>& ind, const matrix<_T>& size) {
 
 template <class _T>
 matrix<int>& size(const matrix<_T>& M){
-    return *(new matrix<int>(1,2,{M.size[0],M.size[1]}));
+    return *(new matrix<int>(1,2,{M.sze[0],M.sze[1]}));
 }
 
 template <class _T>
 matrix<_T>& matrix<_T>::operator[] (const matrix<int>& ind) const{
-    matrix<_T>* M=new matrix<_T>(ind.size[0],ind.size[1]);
-    for(int i=0;i<ind.size[0];i++)
-        for(int j=0;j<ind.size[1];j++)
+    matrix<_T>* M=new matrix<_T>(size(ind),{});
+    for(int i=0;i<size(ind).get(0);++i)
+        for(int j=0;j<size(ind).get(1);++j)
             (*M)[i][j]=this->get(ind.get(i,j));
 	return *M;
 }
@@ -214,10 +188,10 @@ matrix<_T>& matrix<_T>::get (const matrix<int>& row, const matrix<int>& col) con
 }
 
 template<class _U, class _V> bool operator == (const matrix<_U>& M1, const matrix<_V>& M2){
-    if(M1.size[0]!=M2.size[0]||M1.size[1]!=M2.size[1])
+    if(M1.sze[0]!=M2.sze[0]||M1.sze[1]!=M2.sze[1])
         return 0;
-    for(int i=0;i<M1.size[0];i++)
-        for(int j=0;j<M1.size[1];j++)
+    for(int i=0;i<M1.sze[0];i++)
+        for(int j=0;j<M1.sze[1];j++)
             if(M1.mtr[i][j]!=M2.mtr[i][j])
                 return 0;
     return 1;
@@ -230,10 +204,12 @@ template<class _U, class _V> bool operator != (const matrix<_U>& M1, const matri
 template <class _T>
 template <class _U>
 matrix<_T>& matrix<_T>::set(const matrix<int>& ind, const matrix<_U>& val) {
-	if (numel(ind) && numel(val)) 
-		for (int i = 0; i < numel(ind); ++i)
-			for (int j = 0; j < val.numel(); ++j)
-				mtr[i-i/val.size[0]*val.size[0]][i/val.size[0]] = _T(val.get(j));
+	int _ind;
+	if (numel(ind) == numel(val)) 
+		for (int i = 0; i < numel(ind); ++i){
+				_ind=ind.get(i);
+				mtr[_ind-_ind/val.sze[0]*val.sze[0]][_ind/val.sze[0]] = _T(val.get(i));
+		}
 	else
 		throw(string("[Error] set : Sizes do not match."));
 	
@@ -256,12 +232,12 @@ matrix<_T>& reshape(const matrix<_T>& M, const matrix<int>& size) {
 
 template <class _T>
 matrix<_T>& matrix<_T>::operator=(const matrix<_T>& M){
-    if(size[0]!=M.size[0]||size[1]!=M.size[1]){
+    if(sze[0]!=M.sze[0]||sze[1]!=M.sze[1]){
         this->~matrix<_T>();
-        new(this) matrix(M.size[0],M.size[1]);
+        new(this) matrix(M.sze[0],M.sze[1]);
     }
-    for(int i=0;i<size[0];i++)
-        for(int j=0;j<size[1];j++)
+    for(int i=0;i<sze[0];i++)
+        for(int j=0;j<sze[1];j++)
             mtr[i][j]=M.get(i,j);
     return *this;
 }
@@ -269,12 +245,12 @@ matrix<_T>& matrix<_T>::operator=(const matrix<_T>& M){
 template <class _T>
 template <class _U>
 matrix<_T>& matrix<_T>::operator=(const matrix<_U>& M){
-    if(size[0]!=M.size[0]||size[1]!=M.size[1]){
+    if(sze[0]!=size(M).get(0) || sze[1]!=size(M).get(1)){
         this->~matrix<_T>();
-        new(this) matrix(M.size[0],M.size[1]);
+        new(this) matrix(size(M),{});
     }
-    for(int i=0;i<size[0];i++)
-        for(int j=0;j<size[1];j++)
+    for(int i=0;i<sze[0];i++)
+        for(int j=0;j<sze[1];j++)
             mtr[i][j]=M.get(i,j);
     return *this;
 }
@@ -317,153 +293,36 @@ MATRIX_OPS(/)
 #undef MATRIX_OPS
 
 template <class _T, class _U>
-auto operator ^(matrix<_T>& m1, matrix<_U>& m2)->matrix<typename remove_const<decltype(m1.type * m2.type)>::type>& {
-	if(m1.size[1]!=m2.size[0])
-		throw(string("STRINGIFY([Error] Operator ^ : Size do not match."));
-	matrix<typename remove_const<decltype(m1.type * m2.type)>::type>* r= new 
-		matrix<typename remove_const<decltype(m1.type * m2.type)>::type>(m1.size[0],m2.size[1]);
-	_T s;
-	for(int i=0;i<m1.size[0];++i)
-	    for(int k=0;k<m2.size[0];++k){
-	        s=m1[i][k];
-	        for(int j=0;j<m2.size[1];++j)
-	            r->mtr[i][j]+=s*m2[k][j];
-		}
+auto operator ^(const matrix<_T>& m1, const _U& m2)->matrix<typename remove_const<decltype(pow(_T(1),_U(1)))>::type>& {
+	auto  *r= new matrix<typename remove_const<decltype(pow(_T(1),_U(1)))>::type>(m1);
+	for (int i = 0; i < size(m1).get(0); ++i)
+		for (int j = 0; j < size(m1).get(1); ++j)
+			(*r)[i][j] = pow((*r)[i][j],m2);
+	return *r;
+}
+template <class _T, class _U>
+auto operator ^(const _T& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(pow(_T(1),_U(1)))>::type>& {
+	auto *r= new matrix<typename remove_const<decltype(pow(_T(1),_U(1)))>::type> (m2);
+	for (int i = 0; i < size(m2).get(0); ++i)
+		for (int j = 0; j < size(m2).get(1); ++j)
+			(*r)[i][j] = pow(m1,(*r)[i][j]);
 	return *r;
 }
 
-/*
-template <class _T>
-tuple<matrix<_T>, matrix<_T>> qr(const matrix<_T>& m, const int& _start_row = 0) {
-	matrix<_T> q(Id(m.row, _T(1))), r(m), H(q), x;
-	matrix<int> ind_row, ind_q_col(seq(0, m.row - 1)), ind_r_col(seq(0, m.col - 1));
-	for (int i = 0; i < (m.row > m.col ? m.col : m.row - 1) - _start_row; ++i) {
-		ind_row = seq(i + _start_row, m.row - 1);
-		x = r.submtr(ind_row, seq(i, i));
-		if (norm(x) > EPS) {
-			x[0][0] += norm(x)*SIGN(x[0][0]);
-			H = Id(x.row) - 2 * x*x.T() / (x.T()*x);
-			q.set(ind_row, ind_q_col, H*q.get(ind_row, ind_q_col));
-			r.set(ind_row, ind_r_col, H*r.get(ind_row, ind_r_col));
-		}
-	}
-	return make_tuple(q.T(), r.utri(-_start_row));
-}
-
 template <class _T, class _U>
-auto operator / (const matrix<_T>& m1, const matrix<_U>& m2)->matrix<decltype(_U(0) / _T(1))> {
-	matrix<decltype(_T(0)*_U(0))> r;
-	if (m1.col == m2.col) {
-		r = m1;
-		auto qr_m2 = qr(m2);
-		auto Q(get<0>(qr_m2)), R(get<1>(qr_m2));
-		return r;
-	}
-	else if (m2.row == 1 && m2.col == 1) {
-		_U den(m2.get(0, 0));
-		r = 1 / den * m1;
-	}
-	else
-		throw("[Error] Operator / : Sizes do not match.");
-	return r;
-}
-
-template <class _T>
-matrix<_T> rep(const matrix<_T>& _matrix, int _row, int _col) {
-	matrix<_T> _rep(_matrix.row*_row, _matrix.col*_col);
-	matrix<int> _row_seq(seq(0, _matrix.row - 1)), _col_seq;
-	for (int i = 0; i < _row; ++i) {
-		_col_seq = seq(0, _matrix.col - 1);
-		for (int j = 0; j < _col; ++j) {
-			_rep.set(_row_seq, _col_seq, _matrix);
-			_col_seq = _col_seq + _matrix.col;
+auto operator ^(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(_T(1) * _U(1))>::type>& {
+	if(m1.sze[1]!=m2.sze[0])
+		throw(string("STRINGIFY([Error] Operator ^ : Size do not match."));
+	auto* r= new 
+		matrix<typename remove_const<decltype(_T(1) * _U(1))>::type>(size(m1).get(0),size(m2).get(1));
+	_T s;
+	for(int i=0;i<m1.sze[0];++i)
+	    for(int k=0;k<m1.sze[1];++k){
+	        s=m1.mtr[i][k];
+	        for(int j=0;j<m2.sze[1];++j)
+	            r->mtr[i][j]+=s*m2.mtr[k][j];
 		}
-		_row_seq = _row_seq + _matrix.row;
-	}
-	return _rep;
+	return *r;
 }
-
-template <class _T>
-matrix<int> sort(const matrix<_T>& m, bool increasing = 1) {
-	matrix<int> ord(rep(seq(0, m.col - 1), m.row, 1));
-	for (int i = 0; i < m.row; ++i)
-		sort(&(ord[i][0]), &(ord[i][m.col]), [&ord, &m, i, increasing](int i1, int i2) {return increasing ^ (m.get(i, i1) > m.get(i, i2)); });
-	return ord;
-}
-
-template <class _T>
-matrix<int> max(const matrix<_T>& m) {
-	matrix<int> ord(seq(0, m.col - 1)), ord_temp(seq(0, m.row - 1));
-	for (int i = 0; i < m.col; ++i)
-		ord[0][i] = *max_element(&(ord_temp[0][0]), &(ord_temp[0][m.col]), [&m, i](int i1, int i2) {return m.get(i1, i) < m.get(i2, i); });
-	return ord;
-}
-
-template <class _T>
-tuple<matrix<_T>, matrix<_T>> Hessen(const matrix<_T> &m) {
-	// Return [Q,R] s.t. m=Q*R*Q'
-	matrix<_T> q(Id(m.row, _T(1))), r(m), H(q), x(0, 0);
-	if (m.row != m.col) {
-		throw("[Error] Hessen : Not a square matrix.");
-		return make_tuple(q, r);
-	}
-	matrix<int> ind_row(0, 0), ind_q_col(seq(0, m.col - 1)), ind_r_col(seq(0, m.col - 1));
-	for (int i = 0; i < (m.row > m.col ? m.col : m.row - 1) - 1; ++i) {
-		ind_row = seq(i + 1, m.row - 1);
-		x = r.submtr(ind_row, seq(i, i));
-		if (norm(x) > EPS) {
-			x[0][0] += norm(x)*SIGN(x[0][0]);
-			H = Id(x.row) - 2 / pow(norm(x), 2)*x*x.T();
-			q.set(ind_row, ind_q_col, H*q.get(ind_row, ind_q_col));
-			r.set(ind_row, ind_r_col, H*r.get(ind_row, ind_r_col));
-			r.set(ind_r_col, ind_row, r.get(ind_r_col, ind_row)*H);
-		}
-	}
-	return make_tuple(q.T(), r.utri(-1));
-}
-
-template <class _T>
-matrix<complex<double>> fft(const matrix<_T> &y) {
-	matrix<complex<double>> ffty(y.row,y.col);
-	if (y.row)
-		if((y.row & (y.row-1))==0) 
-			if(y.row==1)
-				return y.get(seq(0,0),seq(0,y.col-1));
-			else{
-				matrix<complex<double>> yt(fft(y.get(seq(0,y.row-1,2),seq(0,y.col-1)))),
-										yb(fft(y.get(seq(1,y.row-1,2),seq(0,y.col-1))));
-				matrix<complex<double>> z(dot_mult(rep(dot_pow(rep(
-											matrix<complex<double>>(1,1,{complex<double>(cos(-2*PI/double(y.row)),sin(-2*PI/double(y.row)))})
-											,1,y.row>>1),seq(0,(y.row>>1)-1)).T(false),1,y.col),yb));
-				ffty.set(seq(0,(y.row>>1)-1),seq(0,y.col-1),yt+z);
-				ffty.set(seq(y.row>>1,y.row-1),seq(0,y.col-1),yt-z);
-			}
-		else{
-			int next_pow_2(1);
-			while(next_pow_2<y.row)
-				next_pow_2<<=1;
-			matrix<complex<double>> pow_2_y(next_pow_2,y.col);
-			pow_2_y.set(seq(0,y.row-1),seq(0,y.col-1),y);
-			ffty=fft(pow_2_y).get(seq(0,y.row-1),seq(0,y.col-1));
-		}
-	return ffty;
-}
-
-template <class _T>
-matrix<_T> fht(const matrix<_T> &y) {
-	matrix<_T> fhty(y.row,y.col);
-	if (y.row)
-		if((y.row & (y.row-1))==0)
-			if(y.row==1)
-				return y.get(seq(0,0),seq(0,y.col-1));
-			else{
-				matrix<_T> z(fht(y.get(seq(0,(y.row>>1)-1),seq(0,y.col-1))));
-				fhty.set(seq(0,y.row-1,2),seq(0,y.col-1),z+y.get(seq(y.row>>1,y.row-1),seq(0,y.col-1)));
-				fhty.set(seq(1,y.row-1,2),seq(0,y.col-1),z-y.get(seq(y.row>>1,y.row-1),seq(0,y.col-1)));
-			}
-		else
-			throw("[Error] fht : Only defined for matrix has 2-powered rows.");
-	return fhty;
-}*/
 
 #endif

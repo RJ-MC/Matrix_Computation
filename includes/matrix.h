@@ -2,7 +2,7 @@
 #define matrix_h
 
 #include <iostream>
-#include <tuple>
+#include <cmath>
 #include <iomanip>
 #include <initializer_list>
 using namespace std;
@@ -11,7 +11,7 @@ using namespace std;
 template <class _T>
 class matrix {
 
-	int size[2];
+	int sze[2];
 	_T** mtr;
 	
 public:
@@ -22,8 +22,6 @@ public:
 	template <class _U>
 	matrix(const matrix<_U> &);
 	~matrix();
-	
-	_T get_type();
 	
 	_T* operator[] (int _row);
 	const _T get(int) const;
@@ -67,7 +65,11 @@ public:
 	#undef MATRIX_OPS
 	
 	template <class _V, class _U>
-	friend auto operator ^(matrix<_V>& m1, matrix<_U>& m2)->matrix<typename remove_const<decltype(m1.type * m2.type)>::type>&;
+	friend auto operator ^(const matrix<_V>& m1,const  matrix<_U>& m2)->matrix<typename remove_const<decltype(_V(1) * _U(1))>::type>&;
+	template <class _V, class _U>
+	friend auto operator ^(const matrix<_V>& m1, const _U& m2)->matrix<typename remove_const<decltype(pow(_V(1),_U(1)))>::type>&;
+	template <class _V, class _U>
+	friend auto operator ^(const _V& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(pow(_V(1),_U(1)))>::type>&;
 	
 	friend matrix<int>& eye(int);
 	friend matrix<int>& ones(const matrix<int> &);

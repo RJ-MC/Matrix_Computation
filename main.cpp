@@ -1,3 +1,5 @@
+//	JUST FOR TESTING/DEBUGGING
+
 #include <iostream>
 using namespace std;
 
@@ -7,10 +9,10 @@ typedef matrix<int> MI;
 
 int main() {
 	
-	auto m=reshape(linspace(1,12),MI(2,1,{3,4}));
+	matrix<int> m=reshape(linspace(1,3),matrix<int>(2,1,{1,3}));
 	
 	try{
-		cout<<m<<ltri(m,1);
+		cout<<m<<endl<<fft(m);
 	}
 	catch(const string& e){
 		cout<<e;
