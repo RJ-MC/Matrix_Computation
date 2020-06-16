@@ -93,7 +93,7 @@ template <class _T>
 ostream& operator << (ostream &os, const matrix<_T>& m) {
 	os.setf(ios::fixed, ios::floatfield);
 	os.precision(2);
-	if (m.sze[0]*m.sze[1]) {
+	if (m.sze[0]*m.sze[1])
 		for (int i = 0; i < m.sze[0]; ++i) {
 			if(i==0)
 				os << "©°";
@@ -111,7 +111,6 @@ ostream& operator << (ostream &os, const matrix<_T>& m) {
 				os<< "©¦";
 			os<<"\n";
 		}
-	}
 	else
 		os << "Empty-" << m.sze[0] << "x" << m.sze[1] << "-matrix\n";
 	return os;
@@ -149,13 +148,11 @@ int numel(const matrix<_T>& M) {
 template <class _T>
 matrix<int>& ind2sub(const matrix<int>& ind, const matrix<_T>& size) {
     int n(numel(ind));
-    
 	matrix<int>* res(new matrix<int> (2, n));
 	for(int i=0;i<n;i++){
 	    res->mtr[i][0]=ind / size.get(0,0);
 	    res->mtr[i][1]=ind - ind / size.get(0,0) * size.get(0,0);
 	}
-	    
 	return *res;
 }
 
@@ -181,8 +178,8 @@ matrix<_T>& matrix<_T>::get (const matrix<int>& ind) const {
 template <class _T>
 matrix<_T>& matrix<_T>::get (const matrix<int>& row, const matrix<int>& col) const{
     matrix<_T>* M=new matrix<_T>(numel(row),numel(col));
-    for(int i=0;i<numel(row);i++)
-        for(int j=0;j<numel(col);j++)
+    for(int i=0;i<numel(row);++i)
+        for(int j=0;j<numel(col);++j)
             (*M)[i][j]=this->get(row.get(i),col.get(j));
 	return *M;
 }
@@ -212,7 +209,19 @@ matrix<_T>& matrix<_T>::set(const matrix<int>& ind, const matrix<_U>& val) {
 		}
 	else
 		throw(string("[Error] set : Sizes do not match."));
-	
+	return *this;
+}
+
+template <class _T>
+template <class _U>
+matrix<_T>& matrix<_T>::set(const matrix<int>& row, const matrix<int>& col, const matrix<_U>& val) {
+	int _ind;
+	if (numel(row) == size(val).get(0) && numel(col) == size(val).get(1)) 
+		for (int i = 0; i < numel(row); ++i)
+			for(int j=0;j<numel(col);++j)
+				mtr[row.get(i)][col.get(j)] = _T(val.get(i,j));
+	else
+		throw(string("[Error] set : Sizes do not match."));
 	return *this;
 }
 
@@ -221,12 +230,9 @@ matrix<_T>& reshape(const matrix<_T>& M, const matrix<int>& size) {
     if(numel(size)<2)
         throw(string("[Error] reshape : Size matrix should have exactly 2 elements."));
 	matrix<_T>*v=new matrix<_T>(size.get(0), size.get(1));
-
 	int i(-1);
-
 	while ((++i) < MIN(size.get(0)*size.get(1),numel(M)))
 		(*v)[i-(i/size.get(0))*size.get(0)][i/size.get(0)] = M.get(i);
-
 	return *v;
 }
 

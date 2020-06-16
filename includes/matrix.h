@@ -32,6 +32,8 @@ public:
 	
 	template <class _U>
 	matrix<_T>& set(const matrix<int>&, const matrix<_U>&);
+	template <class _U>
+	matrix<_T>& set(const matrix<int>&, const matrix<int>&, const matrix<_U>&);
 	
 	matrix T(bool _conj = true) const;
 	

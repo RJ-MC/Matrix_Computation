@@ -120,6 +120,16 @@ ltri(M,n=0);        // return the upper/lower part of M with offset n;
 <summary>Matrix functions</summary>
 
 ```cpp
-fft(M);         // return the DFT of M.
+fft2(M);        // conduct FFT to each column of a power-of-2-row M.
+fht(M);         // conduct FHT to each column of a power-of-2-row M.
+```
+</details>
+
+## `Chapter 2` &emsp; Matrix Analysis
+
+<details>
+<summary>Matrix functions</summary>
+
+```cpp
 ```
 </details>
