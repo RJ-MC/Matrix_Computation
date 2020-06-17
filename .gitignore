@@ -31,8 +31,6 @@
 *.out
 *.app
 
-public/app/template.js
-
 main.cpp
 *.dev
 *.layout
