@@ -111,6 +111,17 @@ vecnorm(M,p=2);     // return a row-1 matrix consisting of lp norm of each colum
 diag(M,n=0);        // return the n-offset diagonal of M as a row-1 matrix.
 utri(M,n=0);
 ltri(M,n=0);        // return the upper/lower part of M with offset n;
+apply(M,f);         // apply f to each element of M.
+find(M);            // for a bool M, return a row-1 matrix consisting of the location of all trues.
+find(M,false);      // for a bool M, return a row-1 matrix consisting of the location of the first true.
+```
+</details>
+
+<details>
+<summary>Miscellanies</summary>
+
+```cpp
+simplex(M);         // solve linear programming problem via two-phase method.
 ```
 </details>
 
@@ -125,11 +136,13 @@ fht(M);         // conduct FHT to each column of a power-of-2-row M.
 ```
 </details>
 
-## `Chapter 2` &emsp; Matrix Analysis
+## `Chapter 5` &emsp; Orthogonalization and Least Squares
 
 <details>
 <summary>Matrix functions</summary>
 
 ```cpp
+QR(M);          // Solve QR decomposition of M.
+                // Q = get<0>(QR(M)); R = get<1>(QR(M));
 ```
 </details>

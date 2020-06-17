@@ -44,6 +44,9 @@ public:
 	template<class _U>
 	friend ostream& operator << (ostream &, const matrix<_U>&);
 	
+	template<class _U>
+	friend istream& operator >> (istream& input, matrix<_U>&);
+	
 	template<class _U, class _V>
 	friend bool operator == (const matrix<_U>&, const matrix<_V>&);
 	
@@ -72,6 +75,18 @@ public:
 	friend auto operator ^(const matrix<_V>& m1, const _U& m2)->matrix<typename remove_const<decltype(pow(_V(1),_U(1)))>::type>&;
 	template <class _V, class _U>
 	friend auto operator ^(const _V& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(pow(_V(1),_U(1)))>::type>&;
+	
+	#define MATRIX_REL_OPS(OP)\
+	template <class _V, class _U>\
+	friend matrix<bool>& operator OP(const matrix<_V>& m1, const _U& m2);\
+	template <class _V, class _U>\
+	friend matrix<bool>& operator OP(const _V& m1, const matrix<_U>& m2);
+	MATRIX_REL_OPS(<)
+	MATRIX_REL_OPS(<=)
+	MATRIX_REL_OPS(>)
+	MATRIX_REL_OPS(>=)
+	MATRIX_REL_OPS(==)
+	#undef MATRIX_REL_OPS
 	
 	friend matrix<int>& eye(int);
 	friend matrix<int>& ones(const matrix<int> &);

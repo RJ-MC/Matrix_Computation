@@ -25,8 +25,7 @@ matrix<_T>::matrix(int row, int col, initializer_list<_T>list){
 			mtr[_row_ind][_col_ind] = elem;
    		else if (++_row_ind < row)
 			mtr[_row_ind][_col_ind=0] = elem;
-		else
-			break;
+		else break;
 }
 
 template <class _T>
@@ -42,8 +41,7 @@ matrix<_T>::matrix(const matrix<int>& Size, initializer_list<_T>list){
 			mtr[_row_ind][_col_ind] = elem;
    		else if (++_row_ind < sze[0])
 			mtr[_row_ind][_col_ind=0] = elem;
-		else
-			break;
+		else break;
 }
 
 template <class _T>
@@ -95,26 +93,36 @@ ostream& operator << (ostream &os, const matrix<_T>& m) {
 	os.precision(2);
 	if (m.sze[0]*m.sze[1])
 		for (int i = 0; i < m.sze[0]; ++i) {
-			if(i==0)
-				os << "©°";
-			else if(i==m.sze[0]-1)
-				os<< "©¸";
-			else
-				os<< "©¦";
+			if(i==0) os << "©°";
+			else if(i==m.sze[0]-1) os<< "©¸";
+			else os<< "©¦";
 			for (int j = 0; j < m.sze[1]; ++j)
 				os << " " << setw(15) << right << m.get(i, j);
-			if(i==0)
-				os << "©´";
-			else if(i==m.sze[0]-1)
-				os<< "©¼";
-			else
-				os<< "©¦";
+			if(i==0) os << "©´";
+			else if(i==m.sze[0]-1) os<< "©¼";
+			else os<< "©¦";
 			os<<"\n";
 		}
 	else
 		os << "Empty-" << m.sze[0] << "x" << m.sze[1] << "-matrix\n";
 	return os;
 }
+
+template <class _T>
+istream& operator >> (istream& input, matrix<_T>& M){
+		int row,col;
+		cout<<"Enter row and column number : ";
+        input >> row >> col;
+        if(row!=size(M).get(0)||col!=size(M).get(1)){
+        	M.~matrix();
+        	new(&M) matrix<_T>(row,col);
+        }
+        cout<<"Input elements in column-first order : ";
+        for(int i=0;i<row;++i)
+        	for(int j=0;j<col;++j)
+        		input>>M.mtr[i][j];
+        return input;
+    }
 
 template <class _T>
 matrix<_T> matrix<_T>::T(bool _conj) const {
@@ -205,7 +213,7 @@ matrix<_T>& matrix<_T>::set(const matrix<int>& ind, const matrix<_U>& val) {
 	if (numel(ind) == numel(val)) 
 		for (int i = 0; i < numel(ind); ++i){
 				_ind=ind.get(i);
-				mtr[_ind-_ind/val.sze[0]*val.sze[0]][_ind/val.sze[0]] = _T(val.get(i));
+				mtr[_ind-_ind/sze[0]*sze[0]][_ind/sze[0]] = _T(val.get(i));
 		}
 	else
 		throw(string("[Error] set : Sizes do not match."));
@@ -330,5 +338,27 @@ auto operator ^(const matrix<_T>& m1, const matrix<_U>& m2)->matrix<typename rem
 		}
 	return *r;
 }
+
+#define MATRIX_REL_OPS(OP)\
+template <class _V, class _U>\
+matrix<bool>& operator OP(const matrix<_V>& m1, const _U& m2){\
+	auto r=new matrix<bool>(size(m1),{});\
+	for(int i=0;i<numel(m1);++i)\
+		r->set(matrix<int>(1,1,{i}),matrix<bool>(1,1,{m1.get(i) OP m2}));\
+	return *r;\
+}\
+template <class _V, class _U>\
+matrix<bool>& operator OP(const _V& m1, const matrix<_U>& m2){\
+	auto r=new matrix<bool>(size(m1),{});\
+	for(int i=0;i<numel(m1);++i)\
+		r->set(matrix<int>(1,1,{i}),matrix<bool>(1,1,{m1 OP m2.get(i)}));\
+	return *r;\
+}
+MATRIX_REL_OPS(<)
+MATRIX_REL_OPS(<=)
+MATRIX_REL_OPS(>)
+MATRIX_REL_OPS(>=)
+MATRIX_REL_OPS(==)
+#undef MATRIX_REL_OPS
 
 #endif

@@ -32,4 +32,10 @@ auto linspace(const _U& start,const _V& end,const _W& step=1)->matrix<typename r
 	return *r;
 }
 
+template <class _U>
+matrix<_U>& linspace(const _U& start){
+	auto r=new matrix<_U>(1,1,{start});
+	return *r;
+}
+
 #endif
