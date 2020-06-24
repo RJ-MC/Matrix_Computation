@@ -7,15 +7,17 @@
 #include <initializer_list>
 using namespace std;
 
+int _NUM=0;
 
 template <class _T>
 class matrix {
 
-	int sze[2];
+	
 	_T** mtr;
 	
 public:
-
+	int sze[2];
+	
 	matrix(int row, int col, initializer_list<_T>list = initializer_list<_T>());
 	matrix(const matrix<int>&, initializer_list<_T>list);
 	matrix(const matrix<_T> &);
@@ -26,9 +28,9 @@ public:
 	_T* operator[] (int _row);
 	const _T get(int) const;
 	const _T get(int, int) const;
-	matrix<_T>& get(const matrix<int>&) const;
-	matrix<_T>& get(const matrix<int>&,const matrix<int>&) const;
-	matrix<_T>& operator[] (const matrix<int>&) const;
+	matrix<_T> get(const matrix<int>&) const;
+	matrix<_T> get(const matrix<int>&,const matrix<int>&) const;
+	matrix<_T> operator[] (const matrix<int>&) const;
 	
 	template <class _U>
 	matrix<_T>& set(const matrix<int>&, const matrix<_U>&);
@@ -54,15 +56,15 @@ public:
 	friend int numel(const matrix<_U>&);
 	
 	template <class _U>
-	friend matrix<int>& size(const matrix<_U>& );
+	friend matrix<int> size(const matrix<_U>& );
 	
 	#define MATRIX_OPS(OP)\
 	template <class _V, class _U>\
-	friend auto operator OP(const matrix<_V>& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(_V(1) OP _U(1))>::type>&;\
+	friend auto operator OP(const matrix<_V>& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(_V(1) OP _U(1))>::type>;\
 	template <class _V, class _U>\
-	friend auto operator OP(const matrix<_V>& m1, const _U& m2)->matrix<typename remove_const<decltype(_V(1) OP _U(1))>::type>&;\
+	friend auto operator OP(const matrix<_V>& m1, const _U& m2)->matrix<typename remove_const<decltype(_V(1) OP _U(1))>::type>;\
 	template <class _V, class _U>\
-	friend auto operator OP(const _V& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(_V(1) OP _U(1))>::type>&;
+	friend auto operator OP(const _V& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(_V(1) OP _U(1))>::type>;
 	MATRIX_OPS(+)
 	MATRIX_OPS(-)
 	MATRIX_OPS(*)
@@ -70,17 +72,17 @@ public:
 	#undef MATRIX_OPS
 	
 	template <class _V, class _U>
-	friend auto operator ^(const matrix<_V>& m1,const  matrix<_U>& m2)->matrix<typename remove_const<decltype(_V(1) * _U(1))>::type>&;
+	friend auto operator ^(const matrix<_V>& m1,const  matrix<_U>& m2)->matrix<typename remove_const<decltype(_V(1) * _U(1))>::type>;
 	template <class _V, class _U>
-	friend auto operator ^(const matrix<_V>& m1, const _U& m2)->matrix<typename remove_const<decltype(pow(_V(1),_U(1)))>::type>&;
+	friend auto operator ^(const matrix<_V>& m1, const _U& m2)->matrix<typename remove_const<decltype(pow(_V(1),_U(1)))>::type>;
 	template <class _V, class _U>
-	friend auto operator ^(const _V& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(pow(_V(1),_U(1)))>::type>&;
+	friend auto operator ^(const _V& m1, const matrix<_U>& m2)->matrix<typename remove_const<decltype(pow(_V(1),_U(1)))>::type>;
 	
 	#define MATRIX_REL_OPS(OP)\
 	template <class _V, class _U>\
-	friend matrix<bool>& operator OP(const matrix<_V>& m1, const _U& m2);\
+	friend matrix<bool> operator OP(const matrix<_V>& m1, const _U& m2);\
 	template <class _V, class _U>\
-	friend matrix<bool>& operator OP(const _V& m1, const matrix<_U>& m2);
+	friend matrix<bool> operator OP(const _V& m1, const matrix<_U>& m2);
 	MATRIX_REL_OPS(<)
 	MATRIX_REL_OPS(<=)
 	MATRIX_REL_OPS(>)
@@ -88,8 +90,8 @@ public:
 	MATRIX_REL_OPS(==)
 	#undef MATRIX_REL_OPS
 	
-	friend matrix<int>& eye(int);
-	friend matrix<int>& ones(const matrix<int> &);
+	friend matrix<int> eye(int);
+	friend matrix<int> ones(const matrix<int> &);
 	
 };
 

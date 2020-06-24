@@ -3,6 +3,7 @@
 
 #define ROUND(x) (int((x)<0?(x-0.5):(x+0.5)))
 #define SIGN(x)  (int((x)<0?-1:((x)>0?1:0)))
+#define BI_SIGN(x)  (int((x)<0?-1:1))
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #define MIN(a,b) ((a)<(b)?(a):(b))
 #define IS_ZERO(a) (abs(a)<EPS)
