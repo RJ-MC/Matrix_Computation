@@ -352,8 +352,22 @@ matrix<complex<_T>> eigval(const matrix<_T>& m){
 			RES[0][i]=M.get(i,i);
 	if(i==size(m).get(0)-1)
 		RES[0][size(m).get(0)-1]=M.get(numel(M)-1);
-	cout<<M;
+	//cout<<M;
 	return RES;
+}
+
+template<class _T>
+matrix<complex<_T>> roots(const matrix<_T>& m){
+	int i(0);
+	while(i<numel(m)&&IS_ZERO(m.get(i)))
+		i++;
+	if(i==numel(m))
+		return matrix<complex<_T>>{1,0};
+	else{
+		auto M=-1*m.get(linspace(numel(m)-1,i+1,-1).T(false))/m.get(i);
+		auto R=cmb(cmb(zeros(matrix<int>(2,1,{1,numel(M)-1})),eye(numel(M)-1),false),M);
+		return eigval(R);
+	}
 }
 
 #endif

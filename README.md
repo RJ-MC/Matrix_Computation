@@ -116,6 +116,9 @@ find(M);            // for a bool M, return a row-1 matrix consisting of the loc
 find(M,false);      // for a bool M, return a row-1 matrix consisting of the location of the first true.
 diff(M);            // return difference of each column: M(2:end,:)-M(1:end-1,:).
 det(M);             // return the determinant.
+abs(M);             // return abs of M.
+cmb(M1,M2,_horizontal=true)
+                    // combine M1 and M2 in the indicated order.
 ```
 </details>
 
@@ -146,6 +149,16 @@ fht(M);         // conduct FHT to each column of a power-of-2-row M.
 ```cpp
 QR(M);          // Solve QR decomposition of M.
                 // Q = get<0>(QR(M)); R = get<1>(QR(M));
+```
+</details>
+
+## `Chapter 7` &emsp; Unsymmetric Eigenvalue Problems
+
+<details>
+<summary>Matrix functions</summary>
+
+```cpp
 eigval(M);      // return all eigenvalues of M.
+roots(M);       // return zeros of polynomial of coefficients M.
 ```
 </details>

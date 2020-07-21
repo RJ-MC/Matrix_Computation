@@ -78,11 +78,15 @@ matrix<_T>::matrix(const matrix<_U> &M){
 
 template <class _T>
 const _T matrix<_T>::get(int i, int j) const {
+	if(i<0||j<0||i>=sze[0]||j>=sze[1])
+		throw(string("[Error] get : Exceed range."));
 	return mtr[i][j];
 }
 
 template <class _T>
 const _T matrix<_T>::get(int ind) const {
+	if(ind<0||ind>=numel(*this))
+		throw(string("[Error] get : Exceed range."));
 	return mtr[ind - ind / sze[0] * sze[0]][ind / sze[0]];
 }
 
@@ -139,6 +143,8 @@ matrix<_T> matrix<_T>::T(bool _conj) const {
 
 template <class _T>
 _T* matrix<_T>::operator [] (int _row) {
+	if(_row>=sze[0])
+		throw(string("[Error] Operator [] : Exceed range."));
 	return mtr[_row];
 }
 
@@ -184,12 +190,10 @@ matrix<_T> matrix<_T>::get (const matrix<int>& ind) const {
 
 template <class _T>
 matrix<_T> matrix<_T>::get (const matrix<int>& row, const matrix<int>& col) const{
-	if(!numel(*this))
-		throw(string("[Error] get : Exceed range."));
     matrix<_T> M(numel(row),numel(col));
     for(int i=0;i<numel(row);++i)
         for(int j=0;j<numel(col);++j)
-            (M)[i][j]=this->get(row.get(i),col.get(j));
+            M[i][j]=this->get(row.get(i),col.get(j));
 	return M;
 }
 
@@ -210,10 +214,12 @@ template<class _U, class _V> bool operator != (const matrix<_U>& M1, const matri
 template <class _T>
 template <class _U>
 matrix<_T>& matrix<_T>::set(const matrix<int>& ind, const matrix<_U>& val) {
-	int _ind;
+	int _ind,N(numel(*this));
 	if (numel(ind) == numel(val)) 
 		for (int i = 0; i < numel(ind); ++i){
 				_ind=ind.get(i);
+				if(_ind>=N||_ind<0)
+					throw(string("[Error] set : Exceed range."));
 				mtr[_ind-_ind/sze[0]*sze[0]][_ind/sze[0]] = _T(val.get(i));
 		}
 	else
@@ -224,11 +230,17 @@ matrix<_T>& matrix<_T>::set(const matrix<int>& ind, const matrix<_U>& val) {
 template <class _T>
 template <class _U>
 matrix<_T>& matrix<_T>::set(const matrix<int>& row, const matrix<int>& col, const matrix<_U>& val) {
-	int _ind;
+	int _ind,_row(this->sze[0]),_col(this->sze[1]),curr_row,curr_col;
 	if (numel(row) == size(val).get(0) && numel(col) == size(val).get(1)) 
-		for (int i = 0; i < numel(row); ++i)
-			for(int j=0;j<numel(col);++j)
-				mtr[row.get(i)][col.get(j)] = _T(val.get(i,j));
+		for (int i = 0; i<numel(row); ++i)
+			for(int j=0;j<numel(col);++j){
+				curr_row=row.get(i);
+				curr_col=col.get(j);
+				if(curr_row<0||curr_col<0||curr_row>=_row||curr_col>=_col)
+					throw(string("[Error] set : Exceed range."));
+				else
+					mtr[curr_row][curr_col] = val.get(i,j);
+			}
 	else
 		throw(string("[Error] set : Sizes do not match."));
 	return *this;
